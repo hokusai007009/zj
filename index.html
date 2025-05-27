@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日营养追踪</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .food-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .food-item h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .food-item p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            transition: width 0.5s ease;
+        }
+
+        .recommendation {
+            background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid #FF9800;
+        }
+
+        .recommendation h4 {
+            color: #E65100;
+            margin-bottom: 10px;
+        }
+
+        .recommendation p {
+            color: #BF360C;
+            line-height: 1.5;
+        }
+
+        .delete-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            float: right;
+        }
+
+        .profile-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🥗 每日营养追踪</h1>
+            <p>健康生活，从记录开始</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('profile')">个人资料</button>
+            <button class="nav-tab" onclick="showTab('food')">记录食物</button>
+            <button class="nav-tab" onclick="showTab('dashboard')">营养报告</button>
+        </div>
+
+        <!-- 个人资料页面 -->
+        <div id="profile" class="tab-content active">
+            <div class="form-group">
+                <label>姓名</label>
+                <input type="text" id="userName" placeholder="请输入您的姓名">
+            </div>
+            
+            <div class="two-column">
+                <div class="form-group">
+                    <label>年龄</label>
+                    <input type="number" id="userAge" placeholder="岁" min="1" max="120">
+                </div>
+                <div class="form-group">
+                    <label>性别</label>
+                    <select id="userGender">
+                        <option value="">选择性别</option>
+                        <option value="male">男</option>
+                        <option value="female">女</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="two-column">
+                <div class="form-group">
+                    <label>身高 (cm)</label>
+                    <input type="number" id="userHeight" placeholder="厘米" min="100" max="250">
+                </div>
+                <div class="form-group">
+                    <label>体重 (kg)</label>
+                    <input type="number" id="userWeight" placeholder="公斤" min="30" max="300">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>活动水平</label>
+                <select id="activityLevel">
+                    <option value="">选择活动水平</option>
+                    <option value="sedentary">久坐 (办公室工作)</option>
+                    <option value="light">轻度活动 (每周1-3次运动)</option>
+                    <option value="moderate">中度活动 (每周3-5次运动)</option>
+                    <option value="active">高度活动 (每周6-7次运动)</option>
+                    <option value="very_active">极高活动 (体力劳动/每日运动)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>健康目标</label>
+                <select id="healthGoal">
+                    <option value="">选择目标</option>
+                    <option value="lose">减重</option>
+                    <option value="maintain">保持体重</option>
+                    <option value="gain">增重</option>
+                    <option value="muscle">增肌</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="saveProfile()">保存个人资料</button>
+
+            <div id="profileDisplay" class="profile-info" style="display: none;">
+                <h4>个人信息摘要</h4>
+                <div id="profileSummary"></div>
+            </div>
+        </div>
+
+        <!-- 食物记录页面 -->
+        <div id="food" class="tab-content">
+            <div class="form-group">
+                <label>食物名称</label>
+                <input type="text" id="foodName" placeholder="例如：苹果、米饭、鸡胸肉">
+            </div>
+
+            <div class="two-column">
+                <div class="form-group">
+                    <label>重量 (克)</label>
+                    <input type="number" id="foodWeight" placeholder="克" min="1">
+                </div>
+                <div class="form-group">
+                    <label>餐次</label>
+                    <select id="mealType">
+                        <option value="breakfast">早餐</option>
+                        <option value="lunch">午餐</option>
+                        <option value="dinner">晚餐</option>
+                        <option value="snack">零食</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn" onclick="addFood()">添加食物</button>
+
+            <div id="todayFoods">
+                <h3>今日摄入食物</h3>
+                <div id="foodList"></div>
+            </div>
+        </div>
+
+        <!-- 营养报告页面 -->
+        <div id="dashboard" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="totalCalories">0</h3>
+                    <p>总热量 (千卡)</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="targetCalories">0</h3>
+                    <p>目标热量</p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>热量摄入进度</label>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="calorieProgress" style="width: 0%"></div>
+                </div>
+                <p id="progressText">0% 完成</p>
+            </div>
+
+            <div id="nutritionRecommendations">
+                <h3>💡 个性化营养建议</h3>
+                <div id="recommendationsList"></div>
+            </div>
+
+            <button class="btn" onclick="clearTodayData()">清空今日数据</button>
+        </div>
+    </div>
+
+    <script>
+        // 数据存储
+        let userData = {};
+        let todayFoods = [];
+        let currentDate = new Date().toDateString();
+
+        // 食物热量数据库 (每100克)
+        const foodDatabase = {
+            '苹果': 52, '香蕉': 89, '橘子': 47, '葡萄': 62, '草莓': 32,
+            '米饭': 130, '面条': 138, '面包': 265, '馒头': 221, '粥': 46,
+            '鸡胸肉': 165, '猪肉': 242, '牛肉': 250, '鱼肉': 206, '虾': 85,
+            '鸡蛋': 155, '牛奶': 54, '酸奶': 99, '豆腐': 76, '豆浆': 14,
+            '西红柿': 18, '黄瓜': 12, '土豆': 76, '胡萝卜': 25, '白菜': 17,
+            '花生': 567, '核桃': 654, '杏仁': 579, '瓜子': 615, '开心果': 560,
+            '巧克力': 546, '蛋糕': 347, '饼干': 433, '薯片': 547, '可乐': 43
+        };
+
+        // 页面初始化
+        window.onload = function() {
+            loadData();
+            updateDashboard();
+        };
+
+        // 切换标签页
+        function showTab(tabName) {
+            // 隐藏所有标签内容
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // 显示选中的标签
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'dashboard') {
+                updateDashboard();
+            }
+        }
+
+        // 保存个人资料
+        function saveProfile() {
+            const name = document.getElementById('userName').value;
+            const age = parseInt(document.getElementById('userAge').value);
+            const gender = document.getElementById('userGender').value;
+            const height = parseInt(document.getElementById('userHeight').value);
+            const weight = parseInt(document.getElementById('userWeight').value);
+            const activityLevel = document.getElementById('activityLevel').value;
+            const healthGoal = document.getElementById('healthGoal').value;
+
+            if (!name || !age || !gender || !height || !weight || !activityLevel || !healthGoal) {
+                alert('请填写完整的个人信息！');
+                return;
+            }
+
+            userData = {
+                name, age, gender, height, weight, activityLevel, healthGoal,
+                bmr: calculateBMR(gender, weight, height, age),
+                tdee: 0
+            };
+
+            userData.tdee = calculateTDEE(userData.bmr, activityLevel);
+            userData.targetCalories = adjustCaloriesForGoal(userData.tdee, healthGoal);
+
+            saveData();
+            displayProfileSummary();
+            
+            const alert = document.createElement('div');
+            alert.className = 'alert';
+            alert.textContent = '个人资料保存成功！';
+            document.getElementById('profile').insertBefore(alert, document.getElementById('profile').firstChild);
+            setTimeout(() => alert.remove(), 3000);
+        }
+
+        // 计算基础代谢率 (BMR)
+        function calculateBMR(gender, weight, height, age) {
+            if (gender === 'male') {
+                return 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+            } else {
+                return 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+            }
+        }
+
+        // 计算总日消耗 (TDEE)
+        function calculateTDEE(bmr, activityLevel) {
+            const multipliers = {
+                'sedentary': 1.2,
+                'light': 1.375,
+                'moderate': 1.55,
+                'active': 1.725,
+                'very_active': 1.9
+            };
+            return bmr * multipliers[activityLevel];
+        }
+
+        // 根据健康目标调整热量
+        function adjustCaloriesForGoal(tdee, goal) {
+            switch(goal) {
+                case 'lose': return tdee - 500; // 减重
+                case 'maintain': return tdee; // 保持
+                case 'gain': return tdee + 300; // 增重
+                case 'muscle': return tdee + 200; // 增肌
+                default: return tdee;
+            }
+        }
+
+        // 显示个人资料摘要
+        function displayProfileSummary() {
+            const bmi = (userData.weight / ((userData.height / 100) ** 2)).toFixed(1);
+            let bmiStatus = '';
+            if (bmi < 18.5) bmiStatus = '偏瘦';
+            else if (bmi < 24) bmiStatus = '正常';
+            else if (bmi < 28) bmiStatus = '偏胖';
+            else bmiStatus = '肥胖';
+
+            document.getElementById('profileSummary').innerHTML = `
+                <p><strong>BMI:</strong> ${bmi} (${bmiStatus})</p>
+                <p><strong>基础代谢:</strong> ${Math.round(userData.bmr)} 千卡/天</p>
+                <p><strong>目标热量:</strong> ${Math.round(userData.targetCalories)} 千卡/天</p>
+                <p><strong>健康目标:</strong> ${getGoalText(userData.healthGoal)}</p>
+            `;
+            document.getElementById('profileDisplay').style.display = 'block';
+        }
+
+        function getGoalText(goal) {
+            const goals = {
+                'lose': '减重',
+                'maintain': '保持体重',
+                'gain': '增重',
+                'muscle': '增肌'
+            };
+            return goals[goal] || goal;
+        }
+
+        // 添加食物
+        function addFood() {
+            const name = document.getElementById('foodName').value.trim();
+            const weight = parseInt(document.getElementById('foodWeight').value);
+            const mealType = document.getElementById('mealType').value;
+
+            if (!name || !weight) {
+                alert('請填写食物名称和重量！');
+                return;
+            }
+
+            // 查找食物热量
+            let calories = 0;
+            for (let food in foodDatabase) {
+                if (name.includes(food) || food.includes(name)) {
+                    calories = Math.round((foodDatabase[food] * weight) / 100);
+                    break;
+                }
+            }
+
+            if (calories === 0) {
+                calories = Math.round(weight * 2); // 默认估算
+            }
+
+            const foodItem = {
+                id: Date.now(),
+                name,
+                weight,
+                calories,
+                mealType,
+                time: new Date().toLocaleTimeString()
+            };
+
+            todayFoods.push(foodItem);
+            saveData();
+            displayFoodList();
+            updateDashboard();
+
+            // 清空输入框
+            document.getElementById('foodName').value = '';
+            document.getElementById('foodWeight').value = '';
+        }
+
+        // 显示食物列表
+        function displayFoodList() {
+            const foodList = document.getElementById('foodList');
+            if (todayFoods.length === 0) {
+                foodList.innerHTML = '<p style="text-align: center; color: #666;">今日还没有记录食物</p>';
+                return;
+            }
+
+            foodList.innerHTML = todayFoods.map(food => `
+                <div class="food-item">
+                    <button class="delete-btn" onclick="deleteFood(${food.id})">删除</button>
+                    <h4>${food.name}</h4>
+                    <p>${food.weight}克 | ${food.calories}千卡 | ${getMealTypeText(food.mealType)} | ${food.time}</p>
+                </div>
+            `).join('');
+        }
+
+        function getMealTypeText(type) {
+            const types = {
+                'breakfast': '早餐',
+                'lunch': '午餐',
+                'dinner': '晚餐',
+                'snack': '零食'
+            };
+            return types[type] || type;
+        }
+
+        // 删除食物
+        function deleteFood(id) {
+            todayFoods = todayFoods.filter(food => food.id !== id);
+            saveData();
+            displayFoodList();
+            updateDashboard();
+        }
+
+        // 更新营养报告
+        function updateDashboard() {
+            const totalCalories = todayFoods.reduce((sum, food) => sum + food.calories, 0);
+            const targetCalories = userData.targetCalories || 2000;
+
+            document.getElementById('totalCalories').textContent = totalCalories;
+            document.getElementById('targetCalories').textContent = Math.round(targetCalories);
+
+            const progress = Math.min((totalCalories / targetCalories) * 100, 100);
+            document.getElementById('calorieProgress').style.width = progress + '%';
+            document.getElementById('progressText').textContent = Math.round(progress) + '% 完成';
+
+            generateRecommendations(totalCalories, targetCalories);
+        }
+
+        // 生成营养建议
+        function generateRecommendations(totalCalories, targetCalories) {
+            const recommendations = [];
+            const calorieDeficit = targetCalories - totalCalories;
+
+            if (calorieDeficit > 500) {
+                recommendations.push({
+                    title: '热量摄入不足',
+                    content: `今日还需要摄入约 ${Math.round(calorieDeficit)} 千卡。建议增加优质蛋白质和复合碳水化合物的摄入。`
+                });
+            } else if (calorieDeficit < -200) {
+                recommendations.push({
+                    title: '热量摄入过量',
+                    content: `今日热量摄入超出目标 ${Math.round(-calorieDeficit)} 千卡。建议增加运动或调整晚餐份量。`
+                });
+            } else {
+                recommendations.push({
+                    title: '热量摄入良好',
+                    content: '今日热量摄入基本符合目标，继续保持均衡饮食。'
+                });
+            }
+
+            // 根据用户目标添加建议
+            if (userData.healthGoal) {
+                switch(userData.healthGoal) {
+                    case 'lose':
+                        recommendations.push({
+                            title: '减重建议',
+                            content: '建议多摄入蔬菜、瘦肉蛋白，减少精制碳水化合物。保持适量运动，每周减重0.5-1公斤为宜。'
+                        });
+                        break;
+                    case 'gain':
+                        recommendations.push({
+                            title: '增重建议',
+                            content: '增加健康脂肪和蛋白质摄入，如坚果、牛油果、瘦肉等。少食多餐，配合力量训练效果更佳。'
+                        });
+                        break;
+                    case 'muscle':
+                        recommendations.push({
+                            title: '增肌建议',
+                            content: '确保每日蛋白质摄入量达到体重的1.6-2.2倍(克)。训练后30分钟内补充蛋白质效果最佳。'
+                        });
+                        break;
+                }
+            }
+
+            // 一般健康建议
+            recommendations.push({
+                title: '每日健康小贴士',
+                content: '记得多喝水(每日8杯)，保证充足睡眠，适量运动。均衡摄入蛋白质、碳水化合物和健康脂肪。'
+            });
+
+            displayRecommendations(recommendations);
+        }
+
+        // 显示建议
+        function displayRecommendations(recommendations) {
+            const container = document.getElementById('recommendationsList');
+            container.innerHTML = recommendations.map(rec => `
+                <div class="recommendation">
+                    <h4>${rec.title}</h4>
+                    <p>${rec.content}</p>
+                </div>
+            `).join('');
+        }
+
+        // 清空今日数据
+        function clearTodayData() {
+            if (confirm('确定要清空今日所有食物记录吗？')) {
+                todayFoods = [];
+                saveData();
+                displayFoodList();
+                updateDashboard();
+                alert('今日数据已清空！');
+            }
+        }
+
+        // 保存数据到内存
+        function saveData() {
+            // 在实际应用中，这里应该保存到本地存储或服务器
+            console.log('数据已保存', { userData, todayFoods });
+        }
+
+        // 加载数据
+        function loadData() {
+            // 在实际应用中，这里应该从本地存储或服务器加载数据
+            displayFoodList();
+            if (userData.name) {
+                displayProfileSummary();
+                // 填充表单
+                document.getElementById('userName').value = userData.name || '';
+                document.getElementById('userAge').value = userData.age || '';
+                document.getElementById('userGender').value = userData.gender || '';
+                document.getElementById('userHeight').value = userData.height || '';
+                document.getElementById('userWeight').value = userData.weight || '';
+                document.getElementById('activityLevel').value = userData.activityLevel || '';
+                document.getElementById('healthGoal').value = userData.healthGoal || '';
+            }
+        }
+    </script>
+</body>
+</html>
